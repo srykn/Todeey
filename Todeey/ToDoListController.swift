@@ -10,11 +10,14 @@ import UIKit
 
 class ToDoListController: UITableViewController {
     
-    let items = ["Buy stuff", "Sell stuff", "Do stuff"]
+    var items = ["Buy stuff", "Sell stuff", "Do stuff"]
+    let defaults = UserDefaults.standard
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
+        if let itemArray = defaults.array(forKey: "ToDoItemCell") as? [String] {
+            items = itemArray
+        }
     }
 
     override func didReceiveMemoryWarning() {
@@ -42,6 +45,30 @@ class ToDoListController: UITableViewController {
             tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
         }
         tableView.deselectRow(at: indexPath, animated: true)
+    }
+    
+    @IBAction func addButtonPreseed(_ sender: UIBarButtonItem) {
+        
+        var newTodoeyItem = UITextField()
+        
+        let alert = UIAlertController(title: "Add new Todoey Item", message: "", preferredStyle: .alert)
+        
+        let action = UIAlertAction(title: "Add", style: .default) { (action) in
+            self.items.append(newTodoeyItem.text!)
+            self.defaults.set(self.items, forKey: "ToDoListItems")
+            self.tableView.reloadData()
+        }
+        
+        alert.addTextField { (alertTextField) in
+            alertTextField.placeholder = "New Todoey Item"
+            newTodoeyItem = alertTextField
+        }
+        
+        alert.addAction(action)
+        
+        present(alert, animated: true, completion: nil)
+        
+        
     }
 }
 
