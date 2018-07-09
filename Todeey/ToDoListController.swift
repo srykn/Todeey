@@ -11,7 +11,7 @@ import UIKit
 class ToDoListController: UITableViewController {
     
     var items = [Item]()
-    let defaults = UserDefaults.standard
+    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -25,13 +25,7 @@ class ToDoListController: UITableViewController {
         let item3 = Item()
         item3.title = "Go somewhere"
         
-        items.append(item1)
-        items.append(item2)
-        items.append(item3)
-    
-        if let itemArray = defaults.array(forKey: "ToDoItemCell") as? [Item] {
-            items = itemArray
-        }
+        loadItems()
     }
 
     override func didReceiveMemoryWarning() {
@@ -58,7 +52,7 @@ class ToDoListController: UITableViewController {
         
         items[indexPath.row].done = !items[indexPath.row].done
         
-        tableView.reloadData()
+        saveData()
         tableView.deselectRow(at: indexPath, animated: true)
     }
     
@@ -73,7 +67,7 @@ class ToDoListController: UITableViewController {
             item.title = newTodoeyItem.text!
             
             self.items.append(item)
-            self.defaults.set(self.items, forKey: "ToDoListItems")
+            self.saveData()
             self.tableView.reloadData()
         }
         
@@ -87,6 +81,29 @@ class ToDoListController: UITableViewController {
         present(alert, animated: true, completion: nil)
         
         
+    }
+    
+    func saveData(){
+        let encoder = PropertyListEncoder()
+        do{
+            let data = try encoder.encode(items)
+            try data.write(to: dataFilePath!)
+        }
+        catch{
+            print("Error: \(error)")
+        }
+        self.tableView.reloadData()
+    }
+    
+    func loadItems(){
+        if let data = try? Data(contentsOf: dataFilePath!){
+            let decoder = PropertyListDecoder()
+            do{
+                items = try decoder.decode([Item].self, from: data)
+            }catch{
+                print("Error decoding items: \(error)")
+            }
+        }
     }
 }
 
